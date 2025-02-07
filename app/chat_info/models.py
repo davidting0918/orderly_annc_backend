@@ -36,6 +36,10 @@ class UpdateChatInfo(BaseModel):
 class DeleteChatInfo(BaseModel):
     chat_id: str  # required
 
+class UpdateChatCategory(BaseModel):
+    action: str  # add / delete
+    category: str  # required
+
 
 class Chat(BaseModel):
     chat_id: str  # fixed can't be changed

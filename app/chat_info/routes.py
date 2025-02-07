@@ -3,13 +3,14 @@ from typing import List, Optional, Union
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.auth.services import verify_api_key
-from app.chat_info.models import Chat, ChatInfoParams, DeleteChatInfo, UpdateChatInfo
+from app.chat_info.models import Chat, ChatInfoParams, DeleteChatInfo, UpdateChatInfo, UpdateChatCategory
 from app.chat_info.services import (
     create_chat,
     delete_chat,
     get_chat_info,
     update_chat_dashboard,
     update_chat_info,
+    udpate_chat_category
 )
 
 router = APIRouter(dependencies=[Depends(verify_api_key)])
@@ -82,3 +83,11 @@ async def delete_chat_route(params: DeleteChatInfo):
         return {"status": 1, "data": res}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting chat: {str(e)}, chat: {params.model_dump()}")
+
+@router.post("/update_category")
+async def add_chat_category_route(params: UpdateChatCategory):
+    try:
+        res = await udpate_chat_category(params)
+        return {"status": 1, "data": res}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating chat category: {str(e)}, params: {params.model_dump()}")

@@ -1,7 +1,7 @@
 import pandas as pd
 from fastapi import HTTPException
 
-from app.chat_info.models import Chat, ChatInfoParams, DeleteChatInfo, UpdateChatInfo
+from app.chat_info.models import Chat, ChatInfoParams, DeleteChatInfo, UpdateChatInfo, UpdateChatCategory
 from app.config.setting import settings as s
 from app.db.dashboard import GCClient
 from app.db.database import MongoClient
@@ -15,7 +15,7 @@ async def create_chat(chat: Chat):
     res = await client.find_one(collection, query={"chat_id": chat.chat_id})
     if res:
         if res["active"]:
-            raise HTTPException(status_code=400, detail=f"Chat already exists with id `{chat.chat_id}`")
+            raise HTTPException(status_code=500, detail=f"Chat already exists with id `{chat.chat_id}`")
         else:
             return await update_chat_info(UpdateChatInfo(chat_id=chat.chat_id, active=True))
     return await client.insert_one(collection, chat.model_dump())
@@ -58,7 +58,7 @@ async def get_chat_info(params: ChatInfoParams):
 async def update_chat_info(params: UpdateChatInfo):
     chat_data = await client.find_one(collection, query={"chat_id": params.chat_id})
     if not chat_data:
-        raise HTTPException(status_code=400, detail=f"Chat not found with id `{params.chat_id}`")
+        raise HTTPException(status_code=500, detail=f"Chat not found with id `{params.chat_id}`")
 
     chat = Chat(**chat_data)
     chat.update(params)
@@ -70,6 +70,21 @@ async def delete_chat(params: DeleteChatInfo):
 
     return {"delete_status": status}
 
+
+async def udpate_chat_category(params: UpdateChatCategory):
+    """
+    This function will add or delete a chat category:
+    1. Add or remove the category in dashboard
+    """
+    if params.action == "add":
+        pass
+    elif params.action == "delete":
+        # delete all category from chat in db
+        chats_data = await client.find_many(
+            collection, query={"category": {"$in": [params.category]}, "active": True}
+        )
+        pass
+    return
 
 async def update_chat_dashboard(direction: str = "pull", **kwargs):
     """
@@ -161,4 +176,5 @@ async def update_chat_dashboard(direction: str = "pull", **kwargs):
             )
         return results
     else:
-        raise HTTPException(status_code=400, detail=f"Invalid direction: {direction}. Only `pull` or `push` is allowed")
+        raise HTTPException(status_code=500, detail=f"Invalid direction: {direction}. Only `pull` or `push` is allowed")
+
