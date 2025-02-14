@@ -4,12 +4,10 @@ __pycache__
 .idea
 gc_config.json
 .DS_Store
-app/.env
-app/logs
+backend/app/logs
 bot/log
 bot/db/files
-bot/.env
-misc.py
+.env
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 

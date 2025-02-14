@@ -3,9 +3,9 @@ import secrets
 from fastapi import HTTPException, Security
 from fastapi.security.api_key import APIKeyHeader
 
-from app.auth.models import APIKey
-from app.config.setting import settings as s
-from app.db.database import MongoClient
+from backend.app.auth.models import APIKey
+from backend.app.config.setting import settings as s
+from backend.app.db.database import MongoClient
 
 client = MongoClient(s.dev_db if s.is_test else s.prod_db)
 collections = "keys"

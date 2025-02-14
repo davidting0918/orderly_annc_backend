@@ -7,11 +7,11 @@ from logging.handlers import TimedRotatingFileHandler
 import uvicorn
 from fastapi import FastAPI
 
-from app.auth.routes import router as auth_router
-from app.chat_info.routes import router as chat_info_router
-from app.config.setting import settings as s
-from app.tickets.routes import router as tickets_router
-from app.users.routes import router as users_router
+from backend.app.auth.routes import router as auth_router
+from backend.app.chat_info.routes import router as chat_info_router
+from backend.app.config.setting import settings as s
+from backend.app.tickets.routes import router as tickets_router
+from backend.app.users.routes import router as users_router
 
 cp = os.path.dirname(os.path.realpath(__file__))
 
@@ -45,7 +45,7 @@ def create_app(is_test: bool = False):
     @app.middleware("http")
     async def log_requests(request, call_next):
         auth_key = request.headers.get("X-API-KEY", "No API Key")
-        params = request.query_params if request.method == "GET" else await request.json()
+        params = request.query_params
         client_ip = request.client.host if request.client else "Unknown IP"
         logger.info(f"Request received: {request.method} - {request.url.path} - {params} - {auth_key} - {client_ip}")
         response = await call_next(request)

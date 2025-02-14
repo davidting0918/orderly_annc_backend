@@ -2,10 +2,10 @@
 import pandas as pd
 from fastapi import HTTPException
 
-from app.config.setting import settings as s
-from app.db.dashboard import GCClient
-from app.db.database import MongoClient
-from app.tickets.models import (
+from backend.app.config.setting import settings as s
+from backend.app.db.dashboard import GCClient
+from backend.app.db.database import MongoClient
+from backend.app.tickets.models import (
     CreateTicketParams,
     DeleteTicket,
     DeleteTicketParams,
@@ -14,8 +14,8 @@ from app.tickets.models import (
     TicketAction,
     TicketInfoParams,
 )
-from app.users.models import User
-from app.users.services import collection as user_collection
+from backend.app.users.models import User
+from backend.app.users.services import collection as user_collection
 
 client = MongoClient(s.dev_db if s.is_test else s.prod_db)
 collection = "ticket_records"

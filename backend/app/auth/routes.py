@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException
 
-from app.auth.services import create_api_key
+from backend.app.auth.services import create_api_key
 
 router = APIRouter()
 
 
-# @router.post("/create")
+@router.post("/create")
 async def create_api_key_route(name: str):
     inputs = {"name": name}
     try:
