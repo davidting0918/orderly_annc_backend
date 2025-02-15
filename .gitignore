@@ -4,7 +4,6 @@ __pycache__
 .idea
 gc_config.json
 .DS_Store
-app/logs
 bot/log
 bot/db/files
 .env
