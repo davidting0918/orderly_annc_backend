@@ -6,7 +6,7 @@
 
 ### Base URL
 ```
-http://localhost:8000
+https://orderly-annc-backend-484dd8d40b2b.herokuapp.com/
 ```
 
 ### Authentication Header (Required for all endpoints):
