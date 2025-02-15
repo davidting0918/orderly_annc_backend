@@ -1,4 +1,3 @@
-# app/main.py
 import logging
 import os
 from argparse import ArgumentParser
@@ -20,61 +19,56 @@ origins = [
     "http://localhost:3000",
     "http://localhost:8000",
 ]
+
 def setup_logger(name: str):
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
 
-    # create handler for each log a day
     handler = TimedRotatingFileHandler(
         f"{cp}/logs/main.log",
         when="midnight",
         interval=1,
     )
 
-    # create formatter
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
 
-    # add handler to logger
     logger.addHandler(handler)
     return logger
 
+app = FastAPI()
 
-# create app
-def create_app(is_test: bool = False):
-    s.is_test = is_test
-    app = FastAPI()
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-    logger = setup_logger("main")
+# Apply CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    @app.middleware("http")
-    async def log_requests(request, call_next):
-        auth_key = request.headers.get("X-API-KEY", "No API Key")
-        params = request.query_params
-        client_ip = request.client.host if request.client else "Unknown IP"
-        logger.info(f"Request received: {request.method} - {request.url.path} - {params} - {auth_key} - {client_ip}")
-        response = await call_next(request)
-        logger.info(f"Response sent: {response.status_code}")
-        return response
+logger = setup_logger("main")
 
-    app.include_router(users_router, prefix="/users", tags=["Users"])
-    app.include_router(chat_info_router, prefix="/chats", tags=["Chats"])
-    app.include_router(tickets_router, prefix="/tickets", tags=["Tickets"])
-    app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+@app.middleware("http")
+async def log_requests(request, call_next):
+    auth_key = request.headers.get("X-API-KEY", "No API Key")
+    params = request.query_params
+    client_ip = request.client.host if request.client else "Unknown IP"
+    logger.info(f"Request received: {request.method} - {request.url.path} - {params} - {auth_key} - {client_ip}")
+    response = await call_next(request)
+    logger.info(f"Response sent: {response.status_code}")
+    return response
 
-    return app
-
+# Include routers
+app.include_router(users_router, prefix="/users", tags=["Users"])
+app.include_router(chat_info_router, prefix="/chats", tags=["Chats"])
+app.include_router(tickets_router, prefix="/tickets", tags=["Tickets"])
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 
 if __name__ == "__main__":
     args = ArgumentParser("Run the FastAPI server for announcement system")
     args.add_argument("--test", action="store_true", help="Run the server in test mode", default=False)
-
     args = args.parse_args()
-    app = create_app(args.test)
+
+    s.is_test = args.test  # Ensure test mode is set correctly
     uvicorn.run(app, host="0.0.0.0", port=8000)
