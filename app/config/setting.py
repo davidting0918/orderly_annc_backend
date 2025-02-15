@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     prod_db: str
     command_bot_token: str
     event_bot_token: str
-    gc_config_path: str
+    gc_config: str
     dashboard_url: str
     is_test: bool = False
 

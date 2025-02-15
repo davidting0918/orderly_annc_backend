@@ -4,11 +4,13 @@ import pandas as pd
 import pygsheets as pg
 
 from app.config.setting import settings as s
+import json
 
 
 class GCClient:
     def __init__(self):
-        self.gc_client = pg.authorize(service_file=s.gc_config_path)
+        gc_config_json = json.loads(s.gc_config)
+        self.gc_client = pg.authorize(credentials=gc_config_json)
 
     def get_ws(self, name: str, url: str = s.dashboard_url, to_type: str = "df") -> Union[pg.Worksheet, pd.DataFrame]:
         ws = self.gc_client.open_by_url(url)
