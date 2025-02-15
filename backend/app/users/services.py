@@ -13,7 +13,7 @@ from backend.app.users.models import (
 )
 
 client = MongoClient(s.dev_db if s.is_test else s.prod_db)
-collection = "permission"
+collection = "users"
 gc_client = GCClient()
 
 
