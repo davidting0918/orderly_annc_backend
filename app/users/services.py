@@ -2,10 +2,10 @@
 import pandas as pd
 from fastapi import HTTPException
 
-from backend.app.config.setting import settings as s
-from backend.app.db.dashboard import GCClient
-from backend.app.db.database import MongoClient
-from backend.app.users.models import (
+from app.config.setting import settings as s
+from app.db.dashboard import GCClient
+from app.db.database import MongoClient
+from app.users.models import (
     DeleteUserParams,
     UpdateUsersInfoParams,
     User,

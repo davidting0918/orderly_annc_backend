@@ -10,8 +10,8 @@ from pydantic import BaseModel, Field
 from telegram import Bot, request
 from telegram.error import TelegramError
 
-from backend.app.config.setting import settings as s
-from backend.app.users.models import User
+from app.config.setting import settings as s
+from app.users.models import User
 
 
 class EventBot(Bot):

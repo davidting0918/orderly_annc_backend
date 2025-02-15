@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from backend.app.auth.services import create_api_key
+from app.auth.services import create_api_key
 
 router = APIRouter()
 

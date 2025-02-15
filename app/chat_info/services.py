@@ -1,10 +1,10 @@
 import pandas as pd
 from fastapi import HTTPException
 
-from backend.app.chat_info.models import Chat, ChatInfoParams, DeleteChatInfo, UpdateChatInfo, UpdateChatCategory
-from backend.app.config.setting import settings as s
-from backend.app.db.dashboard import GCClient
-from backend.app.db.database import MongoClient
+from app.chat_info.models import Chat, ChatInfoParams, DeleteChatInfo, UpdateChatInfo, UpdateChatCategory
+from app.config.setting import settings as s
+from app.db.dashboard import GCClient
+from app.db.database import MongoClient
 
 client = MongoClient(s.dev_db if s.is_test else s.prod_db)
 collection = "chat_info"

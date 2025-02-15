@@ -3,15 +3,15 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from backend.app.auth.services import verify_api_key
-from backend.app.tickets.models import (
+from app.auth.services import verify_api_key
+from app.tickets.models import (
     ApproveRejectTicketParams,
     CreateTicketParams,
     DeleteTicketParams,
     TicketInfoParams,
     TicketStatus,
 )
-from backend.app.tickets.services import (  # delete_ticket,
+from app.tickets.services import (  # delete_ticket,
     approve_ticket,
     create_ticket,
     delete_ticket,

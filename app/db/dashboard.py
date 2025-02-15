@@ -3,7 +3,7 @@ from typing import Union
 import pandas as pd
 import pygsheets as pg
 
-from backend.app.config.setting import settings as s
+from app.config.setting import settings as s
 
 
 class GCClient:

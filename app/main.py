@@ -7,11 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from fastapi import FastAPI
 
-from backend.app.auth.routes import router as auth_router
-from backend.app.chat_info.routes import router as chat_info_router
-from backend.app.config.setting import settings as s
-from backend.app.tickets.routes import router as tickets_router
-from backend.app.users.routes import router as users_router
+from app.auth.routes import router as auth_router
+from app.chat_info.routes import router as chat_info_router
+from app.config.setting import settings as s
+from app.tickets.routes import router as tickets_router
+from app.users.routes import router as users_router
 
 cp = os.path.dirname(os.path.realpath(__file__))
 origins = [

@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.collection import Collection
 
-from backend.app.config.setting import settings
+from app.config.setting import settings
 
 
 class MongoClient:

@@ -3,14 +3,14 @@ from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
-from backend.app.auth.services import verify_api_key
-from backend.app.users.models import (
+from app.auth.services import verify_api_key
+from app.users.models import (
     DeleteUserParams,
     UpdateUsersInfoParams,
     User,
     UserInfoParams,
 )
-from backend.app.users.services import (
+from app.users.services import (
     create_user,
     delete_user,
     in_whitelist,

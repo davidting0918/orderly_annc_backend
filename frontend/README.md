@@ -1,3 +1,0 @@
-### Frontend structure
-
-### Dashboard page

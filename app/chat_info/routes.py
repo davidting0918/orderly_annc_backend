@@ -2,9 +2,9 @@ from typing import List, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from backend.app.auth.services import verify_api_key
-from backend.app.chat_info.models import Chat, ChatInfoParams, DeleteChatInfo, UpdateChatInfo, UpdateChatCategory
-from backend.app.chat_info.services import (
+from app.auth.services import verify_api_key
+from app.chat_info.models import Chat, ChatInfoParams, DeleteChatInfo, UpdateChatInfo, UpdateChatCategory
+from app.chat_info.services import (
     create_chat,
     delete_chat,
     get_chat_info,
