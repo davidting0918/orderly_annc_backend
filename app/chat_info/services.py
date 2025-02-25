@@ -1,7 +1,13 @@
 import pandas as pd
 from fastapi import HTTPException
 
-from app.chat_info.models import Chat, ChatInfoParams, DeleteChatInfo, UpdateChatInfo, UpdateChatCategory
+from app.chat_info.models import (
+    Chat,
+    ChatInfoParams,
+    DeleteChatInfo,
+    UpdateChatCategory,
+    UpdateChatInfo,
+)
 from app.config.setting import settings as s
 from app.db.dashboard import GCClient
 from app.db.database import MongoClient
@@ -80,11 +86,10 @@ async def udpate_chat_category(params: UpdateChatCategory):
         pass
     elif params.action == "delete":
         # delete all category from chat in db
-        chats_data = await client.find_many(
-            collection, query={"category": {"$in": [params.category]}, "active": True}
-        )
-        pass
-    return
+        chats_data = await client.find_many(collection, query={"category": {"$in": [params.category]}, "active": True})
+
+    return chats_data
+
 
 async def update_chat_dashboard(direction: str = "pull", **kwargs):
     """
@@ -103,9 +108,12 @@ async def update_chat_dashboard(direction: str = "pull", **kwargs):
     }
     if direction == "push":
         ws = gc_client.get_ws(name="TG Chat Info", to_type="ws")
-        chat_info = pd.DataFrame(await client.find_many(collection, query={"active": True}))[
-            list(fixed_columns_map.keys())
-        ].rename(columns=fixed_columns_map)
+        chat_info_db = pd.DataFrame(await client.find_many(collection, query={"active": True}))
+
+        if chat_info_db.empty:
+            return []
+
+        chat_info = chat_info_db[list(fixed_columns_map.keys())].rename(columns=fixed_columns_map)
 
         chat_info["Label"] = chat_info["Label"].apply(lambda x: ", ".join(x) if x else "")
         chat_info["Language"] = chat_info["Language"].apply(lambda x: ", ".join(x) if x else "")
@@ -138,6 +146,9 @@ async def update_chat_dashboard(direction: str = "pull", **kwargs):
         Category is the column between Description and Label
         """
         chat_info = gc_client.get_ws(name="TG Chat Info", to_type="df")  # .drop(columns=[""])
+        if chat_info.empty:
+            return []
+
         if "Description" not in chat_info.columns:
             chat_info["Description"] = ""
 
@@ -177,4 +188,3 @@ async def update_chat_dashboard(direction: str = "pull", **kwargs):
         return results
     else:
         raise HTTPException(status_code=500, detail=f"Invalid direction: {direction}. Only `pull` or `push` is allowed")
-
