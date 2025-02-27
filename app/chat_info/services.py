@@ -14,6 +14,7 @@ from app.db.database import MongoClient
 
 client = MongoClient(s.dev_db if s.is_test else s.prod_db)
 collection = "chat_info"
+dashboard_sheet = "TG Chat Info"
 gc_client = GCClient()
 
 
@@ -77,18 +78,42 @@ async def delete_chat(params: DeleteChatInfo):
     return {"delete_status": status}
 
 
-async def udpate_chat_category(params: UpdateChatCategory):
+async def update_chat_category(params: UpdateChatCategory):
     """
-    This function will add or delete a chat category:
-    1. Add or remove the category in dashboard
+    - This function will add or delete a chat category:
+        - For adding:
+            1. default no chat have the new category
+            2. only need to add the category in the dashboard (before Description column)
+
+        - For deleting:
+            1. delete all the chats with the category
+            2. remove the category from the dashboard (delete the column)
     """
     if params.action == "add":
-        pass
-    elif params.action == "delete":
-        # delete all category from chat in db
-        chats_data = await client.find_many(collection, query={"category": {"$in": [params.category]}, "active": True})
+        # 1. Insert new category column
+        chat_info = gc_client.get_ws(name=dashboard_sheet, to_type="df")
 
-    return chats_data
+        if params.category in chat_info.columns:
+            return {
+                "message": f"Category `{params.category}` already exists in the dashboard",
+            }
+        chat_info.insert(chat_info.columns.get_loc("Description"), params.category, "")
+
+        # 2. update new chat info to the google sheet
+        ws = gc_client.get_ws(name=dashboard_sheet, to_type="ws")
+        ws.clear()
+        ws.set_dataframe(chat_info, start="A1", copy_index=False, copy_head=True)
+        return {
+            "message": f"Category `{params.category}` has been added to the dashboard",
+        }
+    elif params.action == "delete":
+        # 1. delete all the chats with the category
+        return {}
+    else:
+        return {
+            "message": f"Invalid action: {params.action}. Only `add` or `delete` is allowed",
+        }
+
 
 
 async def update_chat_dashboard(direction: str = "pull", **kwargs):
@@ -107,7 +132,7 @@ async def update_chat_dashboard(direction: str = "pull", **kwargs):
         "description": "Description",
     }
     if direction == "push":
-        ws = gc_client.get_ws(name="TG Chat Info", to_type="ws")
+        ws = gc_client.get_ws(name=dashboard_sheet, to_type="ws")
         chat_info_db = pd.DataFrame(await client.find_many(collection, query={"active": True}))
 
         if chat_info_db.empty:
@@ -145,7 +170,7 @@ async def update_chat_dashboard(direction: str = "pull", **kwargs):
         Pull is using to update the online record to the mongo db.
         Category is the column between Description and Label
         """
-        chat_info = gc_client.get_ws(name="TG Chat Info", to_type="df")  # .drop(columns=[""])
+        chat_info = gc_client.get_ws(name=dashboard_sheet, to_type="df")  # .drop(columns=[""])
         if chat_info.empty:
             return []
 
