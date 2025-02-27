@@ -1,7 +1,7 @@
 import os
 
 from lib.adaptor import AnnouncementClient as ac
-from telegram import Update
+from telegram import Update, request
 from telegram.ext import (
     Application,
     ChatMemberHandler,
@@ -18,8 +18,8 @@ class EventBot:
     def name(self):
         return "EventBot"
 
-    def __init__(self, bot_key: str, api_key: str, api_secret: str, is_test: bool = False):
-        self.client = ac(api_key=api_key, api_secret=api_secret)
+    def __init__(self, bot_key: str, api_key: str, api_secret: str, is_test: bool = False, is_prod: bool = True):
+        self.client = ac(api_key=api_key, api_secret=api_secret, is_prod=is_prod)
         self.bot_key = bot_key
         self.logger = get_logger(self.name)
         self.is_test = is_test
@@ -126,5 +126,6 @@ if __name__ == "__main__":
         api_key=os.getenv("API_KEY"),
         api_secret=os.getenv("API_SECRET"),
         is_test=args.test,
+        is_prod=args.prod,
     )
     event_bot.run()

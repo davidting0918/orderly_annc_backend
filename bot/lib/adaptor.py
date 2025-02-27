@@ -2,11 +2,12 @@ import requests as req
 
 
 class AnnouncementClient:
-    BASE_URL = "http://localhost:8000"
+    PROD_BASE_URL = "https://orderly-annc-backend-484dd8d40b2b.herokuapp.com"
+    DEV_BASE_URL = "http://localhost:8000"
     chats_prefix = "/chats"
 
-    def __init__(self, api_key: str, api_secret: str):
-        self.base_url = self.BASE_URL
+    def __init__(self, api_key: str, api_secret: str, is_prod: bool):
+        self.base_url = self.PROD_BASE_URL if is_prod else self.DEV_BASE_URL
         self.api_key = api_key
         self.api_secret = api_secret
         self.header = {"X-API-KEY": self.api_key, "X-API-SECRET": self.api_secret}

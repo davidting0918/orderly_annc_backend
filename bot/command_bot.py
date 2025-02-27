@@ -23,8 +23,8 @@ OPERATION, PERMISSION, USER = range(3)
 
 class CommandBot:
     REQUEST = request.HTTPXRequest(connection_pool_size=50000, connect_timeout=300, read_timeout=300)
-    CONFIRM_CHAT_ID = "-836971986"  # WOO Announcement Approve
-    TEST_CONFIRM_CHAT_ID = "5327851721"  # davidding_WG
+    PROD_CONFIRM_CHAT_ID = "-4728355589"
+    DEV_CONFIRM_CHAT_ID = "5327851721"  # Kronos_davidding
 
     @property
     def name(self):
@@ -357,7 +357,7 @@ class CommandBot:
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         # declare variable for confirm message
-        chat_id = self.TEST_CONFIRM_CHAT_ID if self.is_test else self.CONFIRM_CHAT_ID
+        chat_id = self.DEV_CONFIRM_CHAT_ID if self.is_test else self.PROD_CONFIRM_CHAT_ID
 
         # send out first part of confirm message, include confirm button
         inputs = {
@@ -489,7 +489,7 @@ class CommandBot:
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         await context.bot.send_message(
-            chat_id=self.CONFIRM_CHAT_ID if not self.is_test else self.TEST_CONFIRM_CHAT_ID,
+            chat_id=self.PROD_CONFIRM_CHAT_ID if not self.is_test else self.DEV_CONFIRM_CHAT_ID,
             text=message,
             parse_mode="HTML",
             reply_markup=reply_markup,
@@ -575,7 +575,7 @@ class CommandBot:
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        chat_id = self.TEST_CONFIRM_CHAT_ID if self.is_test else self.CONFIRM_CHAT_ID
+        chat_id = self.DEV_CONFIRM_CHAT_ID if self.is_test else self.PROD_CONFIRM_CHAT_ID
         message = self.get_confirm_message(ticket_id)
         input_ = {
             "chat_id": chat_id,

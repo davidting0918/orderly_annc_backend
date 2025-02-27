@@ -60,4 +60,11 @@ def init_args(name: str):
         default=False,
         help="Run in test mode, default is False",
     )
+
+    parser.add_argument(
+        "--prod",
+        action="store_true",
+        default=False,
+        help="Run in production mode, default is False",
+    )
     return parser.parse_args()
