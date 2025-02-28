@@ -1,6 +1,5 @@
 # users/services.py
 import pandas as pd
-from fastapi import HTTPException
 
 from app.config.setting import settings as s
 from app.db.dashboard import GCClient
@@ -20,7 +19,9 @@ gc_client = GCClient()
 async def create_user(user: User):
     results = await client.find_one(collection, query={"user_id": user.user_id})
     if results:
-        raise HTTPException(status_code=400, detail=f"User already exists with id `{user.user_id}`")
+        return {
+            "message": f"User already exists with id `{user.user_id}`"
+        }
     return await client.insert_one(collection, user.model_dump())
 
 
@@ -34,7 +35,9 @@ async def update_users_info(params: UpdateUsersInfoParams):
     user_data = await client.find_one(collection, query={"user_id": params.user_id})
 
     if not user_data:
-        raise HTTPException(status_code=400, detail=f"User not found with id `{params.user_id}`")
+        return {
+            "message": f"User not found with id `{params.user_id}`"
+        }
 
     user = User(**user_data)
     user.update(params)

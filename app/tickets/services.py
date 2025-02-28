@@ -1,6 +1,5 @@
 # app/tickets/services.py
 import pandas as pd
-from fastapi import HTTPException
 
 from app.config.setting import settings as s
 from app.db.dashboard import GCClient
@@ -76,7 +75,9 @@ async def create_ticket(params: CreateTicketParams):
     if params.action == TicketAction.edit_annc:
         old_ticket = await client.find_one(collection, {"ticket_id": params.ticket["old_ticket_id"]})
         if not old_ticket:
-            raise HTTPException(status_code=400, detail=f"No ticket found with id: `{params.ticket['old_ticket_id']}`")
+            return {
+                "message": f"No ticket found with id: `{params.ticket['old_ticket_id']}`"
+            }
         params.ticket["old_content_text"] = old_ticket["content_text"]
         params.ticket["old_content_html"] = old_ticket["content_html"]
         params.ticket["old_content_md"] = old_ticket["content_md"]
@@ -86,11 +87,13 @@ async def create_ticket(params: CreateTicketParams):
     if params.action == TicketAction.delete_annc:
         old_ticket = await client.find_one(collection, {"ticket_id": params.ticket["old_ticket_id"]})
         if not old_ticket:
-            raise HTTPException(status_code=400, detail=f"No ticket found with id: `{params.ticket['old_ticket_id']}`")
+            return {
+                "message": f"No ticket found with id: `{params.ticket['old_ticket_id']}`"
+            }
         if old_ticket["action"] != TicketAction.post_annc:
-            raise HTTPException(
-                status_code=400, detail=f"Old ticket with id `{params.ticket['old_ticket_id']}` is not post ticket"
-            )
+            return {
+                "message": f"Old ticket with id `{params.ticket['old_ticket_id']}` is not post ticket"
+            }
         params.ticket["old_content_text"] = old_ticket["content_text"]
         params.ticket["old_annc_type"] = old_ticket["annc_type"]
         params.ticket["old_content_html"] = old_ticket["content_html"]
@@ -102,7 +105,9 @@ async def create_ticket(params: CreateTicketParams):
     # first check if the ticket is already created
     res = await client.find_one(collection, {"ticket_id": ticket.ticket_id})
     if res:
-        raise HTTPException(status_code=400, detail=f"Ticket already created with id: `{ticket.ticket_id}`")
+        return {
+            "message": f"Ticket already created with id: `{ticket.ticket_id}`"
+        }
 
     return await client.insert_one(collection, ticket.model_dump())
 
@@ -121,12 +126,14 @@ async def approve_ticket(ticket_id: str, user_id: str):
     query = {"ticket_id": ticket_id}
     ticket_data = await client.find_one(collection, query)
     if not ticket_data:
-        raise HTTPException(status_code=400, detail=f"Ticket not found with id: `{ticket_id}`")
+        return {
+            "message": f"Ticket not found with id: `{ticket_id}`"
+        }
 
     if ticket_data["status"] != "pending":
-        raise HTTPException(
-            status_code=400, detail=f"Ticket with id `{ticket_id}` is not in pending status: {ticket_data['status']}"
-        )
+        return {
+            "message": f"Ticket with id `{ticket_id}` is not in pending status: {ticket_data['status']}"
+        }
 
     ticket_type = {
         "post_annc": PostTicket,
@@ -136,11 +143,15 @@ async def approve_ticket(ticket_id: str, user_id: str):
     ticket = ticket_type[ticket_data["action"]](**ticket_data)
     user_data = await client.find_one(user_collection, {"user_id": user_id})
     if not user_data["admin"]:
-        raise HTTPException(status_code=400, detail=f"User with id `{user_id}` is not admin")
+        return {
+            "message": f"User with id `{user_id}` is not admin"
+        }
     try:
         await ticket.approve(user=User(**user_data))
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error approving ticket: {str(e)}")
+        return {
+            "message": f"Error approving ticket: {str(e)}"
+        }
 
     res = await client.update_one(
         collection,
@@ -159,12 +170,14 @@ async def reject_ticket(ticket_id: str, user_id: str):
     params = {"ticket_id": ticket_id}
     ticket_data = await client.find_one(collection, params)
     if not ticket_data:
-        raise HTTPException(status_code=400, detail=f"Ticket not found with id: `{ticket_id}`")
+        return {
+            "message": f"Ticket not found with id: `{ticket_id}`"
+        }
 
     if ticket_data["status"] != "pending":
-        raise HTTPException(
-            status_code=400, detail=f"Ticket with id `{ticket_id}` is not in pending status: {ticket_data['status']}"
-        )
+        return {
+            "message": f"Ticket with id `{ticket_id}` is not in pending status: {ticket_data['status']}"
+        }
 
     ticket_type = {
         "post_annc": PostTicket,
@@ -174,7 +187,9 @@ async def reject_ticket(ticket_id: str, user_id: str):
     ticket = ticket_type[ticket_data["action"]](**ticket_data)
     user_data = await client.find_one(user_collection, {"user_id": user_id})
     if not user_data["admin"]:
-        raise HTTPException(status_code=400, detail=f"User with id `{user_id}` is not admin")
+        return {
+            "message": f"User with id `{user_id}` is not admin"
+        }
     ticket.reject(user=User(**user_data))
 
     res = await client.update_one(

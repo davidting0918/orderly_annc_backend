@@ -1,5 +1,4 @@
 import pandas as pd
-from fastapi import HTTPException
 
 from app.chat_info.models import (
     Chat,

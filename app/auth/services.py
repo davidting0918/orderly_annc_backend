@@ -1,6 +1,6 @@
 import secrets
 
-from fastapi import HTTPException, Security
+from fastapi import Security
 from fastapi.security.api_key import APIKeyHeader
 
 from app.auth.models import APIKey
@@ -19,7 +19,9 @@ async def create_api_key(name: str) -> APIKey:
     # check whether the key name is already exists
     res = await client.find_one(collections, query={"name": name})
     if res:
-        raise HTTPException(status_code=400, detail=f"Key name already exists with name: `{name}`")
+        return {
+            "message": f"Key name already exists with name: `{name}`"
+        }
 
     api_key = secrets.token_hex(16)
     api_secret = secrets.token_hex(32)
@@ -41,5 +43,7 @@ async def verify_api_key(api_key: str = Security(API_KEY_HEADER), api_secret: st
 
     res = await validate_api_key(api_key, api_secret)
     if not res:
-        raise HTTPException(status_code=403, detail="Invalid API key or secret")
+        return {
+            "message": "Invalid API key or secret"
+        }
     return api_key
