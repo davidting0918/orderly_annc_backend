@@ -22,7 +22,9 @@ async def create_chat(chat: Chat):
     res = await client.find_one(collection, query={"chat_id": chat.chat_id})
     if res:
         if res["active"]:
-            raise HTTPException(status_code=500, detail=f"Chat already exists with id `{chat.chat_id}`")
+            return {
+                "message": f"Chat already exists with id `{chat.chat_id}`"
+            }
         else:
             return await update_chat_info(UpdateChatInfo(chat_id=chat.chat_id, active=True))
     return await client.insert_one(collection, chat.model_dump())
@@ -51,11 +53,11 @@ async def get_chat_info(params: ChatInfoParams):
     if params.chat_type:
         query["chat_type"] = params.chat_type
     if params.language:
-        query["language"] = {"$in": params.language}
+        query["language"] = params.language
     if params.category:
-        query["category"] = {"$in": params.category}
+        query["category"] = params.category
     if params.label:
-        query["label"] = {"$in": params.label}
+        query["label"] = params.label
     if params.active is not None:
         query["active"] = params.active
 
@@ -65,7 +67,9 @@ async def get_chat_info(params: ChatInfoParams):
 async def update_chat_info(params: UpdateChatInfo):
     chat_data = await client.find_one(collection, query={"chat_id": params.chat_id})
     if not chat_data:
-        raise HTTPException(status_code=500, detail=f"Chat not found with id `{params.chat_id}`")
+        return {
+            "message": f"Chat not found with id `{params.chat_id}`"
+        }
 
     chat = Chat(**chat_data)
     chat.update(params)
@@ -108,7 +112,30 @@ async def update_chat_category(params: UpdateChatCategory):
         }
     elif params.action == "delete":
         # 1. delete all the chats with the category
-        return {}
+        category_string = params.category.replace(" ", "_").lower()
+        chat_info = await client.find_many(name=collection, query={"category": category_string})
+
+        for chat in chat_info:
+            chat = Chat(**chat)
+            new_category = [cat for cat in chat.category if cat != category_string]
+            chat.update(UpdateChatInfo(chat_id=chat.chat_id, category=new_category))
+            await client.update_one(collection, query={"chat_id": chat.chat_id}, update=chat.model_dump())
+
+        # 2. remove the category in the dashboard
+
+        chat_info = gc_client.get_ws(name=dashboard_sheet, to_type="df")
+        if params.category not in chat_info.columns:
+            return {
+                "message": f"Category `{params.category}` not found in the dashboard",
+            }
+
+        chat_info.drop(columns=params.category, inplace=True)
+        ws = gc_client.get_ws(name=dashboard_sheet, to_type="ws")
+        ws.clear()
+        ws.set_dataframe(chat_info, start="A1", copy_index=False, copy_head=True)
+        return {
+            "message": f"Category `{params.category}` has been deleted from the dashboard",
+        }
     else:
         return {
             "message": f"Invalid action: {params.action}. Only `add` or `delete` is allowed",
@@ -212,4 +239,6 @@ async def update_chat_dashboard(direction: str = "pull", **kwargs):
             )
         return results
     else:
-        raise HTTPException(status_code=500, detail=f"Invalid direction: {direction}. Only `pull` or `push` is allowed")
+        return{
+            "message": f"Invalid direction: {direction}. Only `pull` or `push` is allowed",
+        }
